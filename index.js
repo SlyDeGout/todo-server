@@ -30,8 +30,10 @@ app.post("/create", async (req, res) => {
       //done: req.body.done ? req.body.done : false
     });
     await newTodo.save();
+
+    const todos = await Todo.find();
     return res.json({
-      message: "Todo created : " + req.body.title + " / id : " + newTodo._id
+      tasks: todos
     });
   } catch (e) {
     res.status(400).json({ error: e.message });
@@ -51,14 +53,15 @@ app.get("/", async (req, res) => {
 // Update
 app.post("/update", async (req, res) => {
   try {
-    if (req.body.id && req.body.done !== undefined) {
+    if (req.body.id) {
       const todo = await Todo.findOne({ _id: req.body.id });
       // Autre manière de trouver un document à partir d'un `id` :
       // const student = await Student.findById(req.body.id);
-      todo.done = req.body.done;
+      todo.done = !todo.done;
       await todo.save();
+
       res.json({
-        message: "Todo updated : " + todo.title + " done : " + todo.done
+        id: todo._id
       });
     } else {
       res.status(400).json({ message: "Missing parameter" });
@@ -76,8 +79,10 @@ app.post("/delete", async (req, res) => {
       // Autre manière de trouver un document à partir d'un `id` :
       // const student = await Student.findById(req.body.id);
       await todo.remove();
+
+      const todos = await Todo.find();
       res.json({
-        message: "Todo removed : " + todo.title + " / " + req.body.id
+        tasks: todos
       });
     } else {
       res.status(400).json({ message: "Missing id" });
@@ -87,6 +92,6 @@ app.post("/delete", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3001, () => {
   console.log("Welcome !!! Todo server started ...");
 });
